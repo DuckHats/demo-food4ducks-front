@@ -1,0 +1,25 @@
+.action-button {
+    width: 100%;
+    background-color: var(--color-primary);
+    border-radius: 8px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .action-button:hover {
+    background-color: var(--color-primary-dark);
+  }
+  
+  .button-text {
+    color: var(--text-on-primary);
+    font-size: 14px;
+    font-family: Inter, sans-serif;
+  }
+  

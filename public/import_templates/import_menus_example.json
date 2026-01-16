@@ -1,0 +1,46 @@
+{
+  "format": "json",
+  "data": [
+    {
+      "day": "2025-06-01",
+      "dishes": [
+        {
+          "dish_date": "2025-06-01",
+          "dish_type_id": 1,
+          "options": ["Macarrons", "Arròs"]
+        },
+        {
+          "dish_date": "2025-06-01",
+          "dish_type_id": 2,
+          "options": ["Pollastre", "Mandonguilles"]
+        },
+        {
+          "dish_date": "2025-06-01",
+          "dish_type_id": 3,
+          "options": ["Iogurt", "Poma"]
+        }
+      ]
+    },
+    {
+      "day": "2025-06-02",
+      "dishes": [
+        {
+          "dish_date": "2025-06-02",
+          "dish_type_id": 1,
+          "options": ["Sopa", "Amanida"]
+        },
+        {
+          "dish_date": "2025-06-02",
+          "dish_type_id": 2,
+          "options": ["Hamburguesa", "Peix arrebossat"]
+        },
+        {
+          "dish_date": "2025-06-02",
+          "dish_type_id": 3,
+          "options": ["Gelat", "Plàtan"]
+        }
+      ]
+    }
+  ]
+}
+ 

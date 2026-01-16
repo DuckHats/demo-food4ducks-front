@@ -1,0 +1,15 @@
+<div
+  class="flex items-center justify-between gap-2"
+  (paste)="handlePaste($event)"
+>
+  <input
+    *ngFor="let item of otpArray; let i = index"
+    #otpInput
+    type="text"
+    maxlength="1"
+    pattern="[0-9]*"
+    class="w-9 h-9 sm:w-10 sm:h-10 text-center font-bold text-slate-900 bg-slate-100 border rounded focus:ring-2 focus:ring-primary"
+    (input)="onInput($event, i)"
+    (keydown)="onKeyDown($event, i)"
+  />
+</div>

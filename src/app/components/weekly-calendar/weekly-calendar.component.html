@@ -1,0 +1,96 @@
+<section
+  class="flex flex-col gap-4 p-6 w-full max-w-[600px] box-border mx-auto sm:p-4"
+>
+  <!-- Header -->
+  <header class="flex items-center justify-between h-[36px] m-0 p-0">
+    <button
+      class="flex justify-center items-center w-[36px] h-[36px] rounded-[8px] bg-transparent cursor-pointer border-none p-0"
+      (click)="navigatePreviousWeek()"
+      aria-label="Setmana anterior"
+    >
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        class="arrow-left"
+      >
+        <path
+          d="M12.5 15L7.5 10L12.5 5"
+          class="stroke-slate-600"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
+
+    <p class="text-slate-600 text-[12px] font-normal leading-[20px] m-0 p-0">
+      {{ UILabels.MENU_SELECTION.WEEK_OF }} {{ currentWeekDisplay }}
+    </p>
+
+    <button
+      class="flex justify-center items-center w-[36px] h-[36px] rounded-[8px] bg-transparent cursor-pointer border-none p-0"
+      (click)="navigateNextWeek()"
+      aria-label="Setmana següent"
+    >
+      <svg
+        width="21"
+        height="20"
+        viewBox="0 0 21 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        class="arrow-right"
+      >
+        <path
+          d="M8.15625 15L13.1562 10L8.15625 5"
+          class="stroke-slate-600"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
+  </header>
+
+  <!-- Days -->
+  <div
+    class="flex justify-between items-center gap-1 sm:gap-3 w-full overflow-hidden"
+  >
+    <button
+      *ngFor="let day of days"
+      (click)="selectDay(day)"
+      [attr.aria-selected]="day.isSelected"
+      [disabled]="day.isDisabled"
+      class="flex-1 min-w-0 h-16 sm:h-[72px] p-2 sm:p-3 rounded-xl cursor-pointer border-none m-0 transition-all duration-300"
+      [ngClass]="{
+        'bg-primary shadow-lg shadow-primary/20 scale-[1.05] z-10':
+          day.isSelected && !day.isDisabled,
+        'bg-white hover:bg-slate-50 border border-slate-50':
+          !day.isSelected && !day.isDisabled,
+        'bg-slate-50/50 cursor-not-allowed opacity-40 grayscale': day.isDisabled
+      }"
+    >
+      <span
+        class="block text-[8px] sm:text-[10px] font-black uppercase tracking-tighter sm:tracking-widest text-center mb-1 sm:mb-1.5 truncate"
+        [ngClass]="{
+          'text-white': day.isSelected && !day.isDisabled,
+          'text-slate-400': !day.isSelected || day.isDisabled
+        }"
+      >
+        {{ day.dayName }}
+      </span>
+      <span
+        class="block text-xs sm:text-[15px] font-bold text-center"
+        [ngClass]="{
+          'text-white': day.isSelected && !day.isDisabled,
+          'text-slate-700': !day.isSelected && !day.isDisabled,
+          'text-slate-300': day.isDisabled
+        }"
+      >
+        {{ day.dayNumber }}
+      </span>
+    </button>
+  </div>
+</section>

@@ -1,0 +1,222 @@
+import { BrandingConfig } from './branding.config';
+
+export const AppConstants = {
+  // Dish types
+  DISH_TYPES: {
+    1: 'Primer plat',
+    2: 'Segon plat',
+    3: 'Postres',
+  },
+  // User types
+  USER_TYPES: {
+    1: 'Administrador',
+    2: 'Alumne',
+    3: 'Cuiner',
+  },
+  // Order status
+  ORDER_STATUS: {
+    PENDING: { value: 1, label: 'Pendent' },
+    IN_PREPARATION: { value: 2, label: 'En preparació' },
+    DELIVERED: { value: 3, label: 'Entregat' },
+    NOT_COLLECTED: { value: 4, label: 'No recollit' },
+  },
+
+  // Order status list for dropdowns
+  ORDER_STATUS_OPTIONS: [
+    { value: 1, label: 'Pendent' },
+    { value: 2, label: 'En preparació' },
+    { value: 3, label: 'Entregat' },
+    { value: 4, label: 'No recollit' },
+  ],
+
+  // User status
+  USER_STATUS: {
+    ACTIVE: 1,
+    INACTIVE: 0,
+  },
+
+  // Default order status
+  DEFAULT_ORDER_STATUS_ID: 1,
+
+  // Storage keys
+  STORAGE_KEYS: {
+    USER: 'user',
+    IS_ADMIN: 'isAdmin',
+  },
+
+  // Email domains
+  EMAIL_DOMAINS: {
+    GINEBRO: BrandingConfig.EMAIL.DOMAIN,
+  },
+
+  // Import template paths
+  IMPORT_TEMPLATES: {
+    MENUS: '/import_templates/import_menus_example.json',
+    MENUS_CSV: '/import_templates/import_menus_example.csv',
+    USERS: '/import_templates/import_users_example.json',
+  },
+
+  // Import descriptions
+  IMPORT_DESCRIPTIONS: {
+    MENUS: "Importar menus des d'un arxiu JSON o CSV",
+    USERS: "Importar usuaris des d'un arxiu JSON",
+  },
+
+  // Configuration constants
+  CONFIGURATION: {
+    TABS: {
+      IMAGES: 'imatges',
+      SCHEDULES: 'horaris',
+      PRICES: 'preus',
+      STATUS: 'estat',
+      REDSYS: 'pagaments',
+      CONFIG: 'config',
+      PAGINATION: 'paginacio',
+    },
+    LABELS: {
+      TITLE: 'Configuració del Sistema',
+      SUBTITLE: 'Gestiona la configuració del sistema',
+      IMAGES_TAB: 'Imatges Menú',
+      SCHEDULES_TAB: 'Horaris',
+      PRICES_TAB: 'Preus',
+      STATUS_TAB: "Estat de l'App",
+      REDSYS_TAB: 'Pagaments',
+      CONFIG_TAB: 'Configuració',
+      PAGINATION_TAB: 'Paginació',
+      IMAGES_TITLE: 'Imatges dels Menús Mensuals',
+      IMAGES_DESC:
+        'Puja les imatges dels menús perquè els usuaris les puguin consultar.',
+      IMG_START_DATE: 'Inici visibilitat',
+      IMG_END_DATE: 'Final visibilitat',
+      NEW_IMG_START: 'Nova Data Inici',
+      NEW_IMG_END: 'Nova Data Fi',
+      SAVE_IMAGE: 'Desar',
+      UPLOAD_NEW: 'Puja una nova imatge',
+      UPLOAD_BUTTON: 'Pujar imatge',
+      UPLOADING_BUTTON: 'Pujant...',
+      UPLOADING: 'Pujant...',
+      ORDERS_TITLE: 'Configuració de Comandes',
+      DEADLINE_TIME: 'Hora límit per la comanda',
+      DEADLINE_TIME_DESC:
+        "Si els dies d'antelació són 0, aquesta hora s'aplica per a comandes del mateix dia. Si és major que 0, l'hora s'ignora ja que prevalen els dies d'antelació.",
+      DAYS_AHEAD: "Dies d'antelació",
+      DAYS_AHEAD_DESC:
+        "Quants dies abans s'ha de tancar la comanda. Si és 0, es pot demanar per al mateix dia fins a l'hora límit.",
+      MENU_PRICE: 'Preu Menú Complet (€)',
+      MENU_PRICE_DESC: '',
+      TAPER_PRICE: 'Preu Tupper (€)',
+      TAPER_PRICE_DESC: '',
+      HALF_MENU_FIRST_PRICE: 'Preu Mig Menú (1r plat) (€)',
+      HALF_MENU_FIRST_PRICE_DESC: '',
+      HALF_MENU_SECOND_PRICE: 'Preu Mig Menú (2n plat) (€)',
+      HALF_MENU_SECOND_PRICE_DESC: '',
+      SAVE_CHANGES: 'Guardar Canvis',
+      SAVING: 'Guardant...',
+      APP_STATUS_TITLE: "Estat de l'Aplicació",
+      APP_STATUS_DESC:
+        "Si desactives l'aplicació, els usuaris veuran una pàgina de manteniment.",
+      APP_ACTIVE: 'Aplicació Activa',
+      APP_ACTIVE_DESC: "L'aplicació està funcionant normalment",
+      APP_INACTIVE_DESC: "L'aplicació està en manteniment",
+      MAINTENANCE_TITLE: 'Estem en manteniment',
+      MAINTENANCE_DESC:
+        "Estem realitzant algunes millores al sistema per oferir-te un millor servei. Torna a intentar-ho d'aquí a una estona.",
+      REDSYS_TITLE: 'Configuració de la Passarel·la de Redsys',
+      REDSYS_DESC: 'Configura les claus i paràmetres de connexió amb Redsys.',
+      REDSYS_URL: "URL de l'Entorn (Proves/Real)",
+      REDSYS_CODE: 'Codi de Comerç (FUC)',
+      REDSYS_TERMINAL: 'Terminal',
+      REDSYS_KEY: 'Clau Secreta (SHA-256)',
+      MAINTENANCE_FOOTER: 'Gràcies per la teva paciència',
+      PAGINATION_TITLE: 'Configuració de Paginació',
+      PAGINATION_DESC:
+        'Configura el nombre de registres que es mostren per pàgina a cada secció.',
+      ORDERS_PER_PAGE: 'Comandes per pàgina',
+      USERS_PER_PAGE: 'Usuaris per pàgina',
+      TRANSACTIONS_PER_PAGE: 'Transaccions per pàgina',
+      ADMIN_DASHBOARD: {
+        TITLE: 'Panell de Control',
+        TABS: {
+          ORDERS: 'ordres',
+          MENUS: 'menus',
+          USERS: 'usuaris',
+          TRANSACTIONS: 'transaccions',
+        },
+        LABELS: {
+          ORDERS: 'Ordres',
+          MENUS: 'Menús',
+          USERS: 'Usuaris',
+          TRANSACTIONS: 'Transaccions',
+        },
+        ORDERS: {
+          TITLE: "Gestió d'Ordres",
+          EXPORT: 'Exportar',
+          PREVIOUS_DAY: 'Dia anterior',
+          NEXT_DAY: 'Dia següent',
+          TABLE: {
+            USER: 'Usuari',
+            EMAIL: 'Email',
+            DATE: 'Data',
+            TYPE: 'Tipus',
+            ALLERGIES: 'Al·lèrgies',
+            FIRST_DISH: 'Primer plat',
+            SECOND_DISH: 'Segon plat',
+            DESSERT: 'Postre',
+            STATUS: 'Estat',
+            TUPPER: 'Tupper',
+          },
+          NO_ORDERS: "No s'han trobat ordres per a la data seleccionada.",
+        },
+        MENUS: {
+          TITLE: 'Gestió de Menús',
+          PREVIOUS_WEEK: 'Setmana anterior',
+          NEXT_WEEK: 'Setmana següent',
+          IMPORT: 'Importar menús',
+          NO_MENUS: 'No hi han menús per a la data seleccionada',
+        },
+        USERS: {
+          TITLE: "Gestió d'Usuaris",
+          IMPORT: 'Importar usuaris',
+          TABLE: {
+            ID: 'ID',
+            NAME: 'Nom',
+            LAST_NAME: 'Cognoms',
+            EMAIL: 'Email',
+            ROLE: 'Rol',
+            BALANCE: 'Balanç',
+            STATUS: 'Estat',
+          },
+          ACTIVE: 'Actiu',
+          INACTIVE: 'Inactiu',
+        },
+      },
+    },
+  },
+  // Payment constants
+  TOP_UP: {
+    PREDEFINED_AMOUNTS: [10, 20, 50, 100],
+    MAX_TRANSACTION_AMOUNT: 150,
+    MODES: {
+      DIRECT: 'direct',
+      PACKS: 'packs',
+    },
+    LABELS: {
+      TITLE: 'Afegir Saldo',
+      BACK_BUTTON: 'Tornar al perfil',
+      DIRECT_MODE_TITLE: 'Suma Directa',
+      PACKS_MODE_TITLE: 'Paquets de Menús',
+      DIRECT_MODE_DESC: 'Selecciona la quantitat que vols afegir',
+      PACKS_MODE_DESC: 'Calcula el total segons els teus menús',
+      CUSTOM_AMOUNT_PLACEHOLDER: 'Altre quantitat',
+      FULL_MENU_LABEL: 'Menú Complet',
+      TAPER_LABEL: 'Suplement Tàper',
+      HALF_MENU_FIRST_LABEL: 'Mig Menú (1r plat)',
+      HALF_MENU_SECOND_LABEL: 'Mig Menú (2n plat)',
+      UNIT: 'unitat',
+      TOTAL_LABEL: 'Total a pagar',
+      LIMIT_WARNING: 'El límit màxim per transacció és de 150,00€',
+      ADD_BALANCE_BUTTON: 'Afegir al saldo',
+      PROCESSING: 'Processant...',
+    },
+  },
+} as const;

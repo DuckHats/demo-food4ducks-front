@@ -1,0 +1,664 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { MenuOption, MenuSection } from '../../interfaces/menu';
+import { WeeklyCalendarComponent } from '../../components/weekly-calendar/weekly-calendar.component';
+import { API_CONFIG } from '../../config/api.config';
+import { OrdersService } from '../../Services/Orders/orders.service';
+import { MenusService } from '../../Services/Menus/menu.service';
+import { AlertService } from '../../Services/Alert/alert.service';
+import { Router } from '@angular/router';
+import { Messages } from '../../config/messages.config';
+import { AppConstants } from '../../config/app-constants.config';
+import { ConsoleMessages } from '../../config/console-messages.config';
+import { ConfigurationService } from '../../Services/Admin/configuration/configuration.service';
+import { AuthService } from '../../Services/Auth/auth.service';
+import { ImageService } from '../../Services/Admin/image/image.service';
+import { NavigationConfig } from '../../config/navigation.config';
+import { IntroModalComponent } from '../../components/modals/intro-modal/intro-modal.component';
+import { ConfirmModalComponent } from '../../components/modals/confirm-modal/confirm-modal.component';
+import { MenuOptionCardComponent } from '../../components/shared/menu-option-card/menu-option-card.component';
+import { MatIconModule } from '@angular/material/icon';
+import { animate, style, transition, trigger } from '@angular/animations';
+import { UILabels } from '../../config/ui-labels.config';
+
+@Component({
+  selector: 'app-menu-selection',
+  templateUrl: './menu-selection.component.html',
+  styleUrls: ['./menu-selection.component.css'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    WeeklyCalendarComponent,
+    MatIconModule,
+    IntroModalComponent,
+    ConfirmModalComponent,
+    MenuOptionCardComponent,
+  ],
+  animations: [
+    trigger('fadeIn', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(10px)' }),
+        animate(
+          '400ms ease-out',
+          style({ opacity: 1, transform: 'translateY(0)' })
+        ),
+      ]),
+    ]),
+  ],
+})
+export default class MenuSelectionComponent implements OnInit {
+  UILabels = UILabels;
+  orderTypes: { id: number; name: string }[] = [];
+  menuTypes: { id: number; name: string; selected: boolean }[] = [];
+  menuSections: MenuSection[] = [];
+  taperSelected = false;
+  selectedDate: Date = new Date();
+
+  // Validation state
+  isRestricted = false;
+  restrictionReason = '';
+  orderDeadlineTime = '10:00';
+  orderDeadlineDaysAhead = 1;
+  orderExists = false;
+  configLoading = true;
+  disabledDates: string[] = [];
+  userOrders: any[] = [];
+  userBalance = 0;
+
+  prices = {
+    menu_price: 0,
+    taper_price: 0,
+    half_menu_first_price: 0,
+    half_menu_second_price: 0,
+  };
+
+  orderPrice = 0;
+  orderBasePrice = 0;
+  orderTaperSurcharge = 0;
+  hasEnoughBalance = true;
+
+  // Modal state
+  showIntroModal = false;
+  showConfirmModal = false;
+
+  // Images logic
+  allImages: any[] = [];
+  activeMenuImage: any = null;
+
+  constructor(
+    private http: HttpClient,
+    private ordersService: OrdersService,
+    private alertService: AlertService,
+    private route: Router,
+    private menusService: MenusService,
+    private configService: ConfigurationService,
+    private authService: AuthService,
+    private imageService: ImageService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadOrderTypes();
+    this.loadConfigs();
+    this.loadImages();
+    this.loadMenuFromBackend();
+
+    // Check if we should show intro modal (e.g., first time this session)
+    const hasSeenIntro = sessionStorage.getItem('menu_intro_seen');
+    if (!hasSeenIntro) {
+      this.showIntroModal = true;
+    }
+  }
+
+  closeIntroModal(): void {
+    this.showIntroModal = false;
+    sessionStorage.setItem('menu_intro_seen', 'true');
+  }
+
+  loadConfigs(): void {
+    this.configService.getConfigurations().subscribe({
+      next: (res) => {
+        if (res.status === 'success') {
+          this.orderDeadlineTime = res.data.order_deadline_time || '10:00';
+          this.orderDeadlineDaysAhead = Number(
+            res.data.order_deadline_days_ahead ?? 1
+          );
+          this.prices = {
+            menu_price: parseFloat(res.data.menu_price) || 0,
+            taper_price: parseFloat(res.data.taper_price) || 0,
+            half_menu_first_price:
+              parseFloat(res.data.half_menu_first_price) || 0,
+            half_menu_second_price:
+              parseFloat(res.data.half_menu_second_price) || 0,
+          };
+        }
+        this.configLoading = false;
+        this.loadUserOrders();
+      },
+      error: () => {
+        this.configLoading = false;
+      },
+    });
+
+    this.authService.checkAuth().subscribe({
+      next: (user) => {
+        this.userBalance = user.balance || 0;
+      },
+    });
+  }
+
+  loadUserOrders(): void {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!user.id) return;
+
+    this.ordersService.getByUser(user.id).subscribe({
+      next: (res) => {
+        this.userOrders = res.data || [];
+        this.calculateDisabledDatesForCurrentWeek();
+        this.checkAvailability();
+      },
+    });
+  }
+
+  loadImages(): void {
+    this.imageService.getImages().subscribe({
+      next: (res) => {
+        if (res.status === 'success') {
+          this.allImages = res.data || [];
+          this.updateActiveImage();
+        }
+      },
+    });
+  }
+
+  updateActiveImage(): void {
+    if (!this.selectedDate || this.allImages.length === 0) {
+      this.activeMenuImage = null;
+      return;
+    }
+
+    const formatted = this.formatDate(this.selectedDate);
+
+    // An image is active if formatted date is between start_date and end_date (inclusive)
+    this.activeMenuImage =
+      this.allImages.find((img) => {
+        return formatted >= img.start_date && formatted <= img.end_date;
+      }) || null;
+  }
+
+  onWeekChanged(monday: Date): void {
+    this.calculateDisabledDatesForWeek(monday);
+  }
+
+  calculateDisabledDatesForCurrentWeek(): void {
+    // Determine the Monday of the current selectedDate's week
+    const d = new Date(this.selectedDate);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(d.setDate(diff));
+    this.calculateDisabledDatesForWeek(monday);
+  }
+
+  calculateDisabledDatesForWeek(monday: Date): void {
+    this.disabledDates = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < 5; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      const formatted = this.formatDate(d);
+
+      // 1. Check if order exists
+      const hasOrder = this.userOrders.some((o) => o.order_date === formatted);
+
+      // 2. Check deadline logic
+      const isDeadlinePassed = this.isDateDeadlinePassed(d);
+
+      if (hasOrder || isDeadlinePassed) {
+        this.disabledDates.push(formatted);
+      }
+    }
+  }
+
+  isDateDeadlinePassed(date: Date): boolean {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const dateMidnight = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
+
+    if (dateMidnight < today) return true;
+
+    if (Number(this.orderDeadlineDaysAhead) === 0) {
+      if (dateMidnight.getTime() === today.getTime()) {
+        const [hours, minutes] = this.orderDeadlineTime.split(':').map(Number);
+        const deadline = new Date(today);
+        deadline.setHours(hours, minutes, 0, 0);
+        return now > deadline;
+      }
+    } else {
+      const diffTime = dateMidnight.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays < Number(this.orderDeadlineDaysAhead);
+    }
+    return false;
+  }
+
+  loadOrderTypes(): void {
+    this.ordersService.getOrderTypes().subscribe({
+      next: (response) => {
+        const types = response.data || response;
+        this.orderTypes = types;
+        this.menuTypes = types.map((type: any) => ({
+          id: type.id,
+          name: type.name,
+          selected: false,
+        }));
+      },
+      error: (err) => {
+        console.error(ConsoleMessages.ERRORS.LOADING_ORDER_TYPES, err);
+        this.orderTypes = [];
+        this.menuTypes = [];
+      },
+    });
+  }
+
+  onDateSelected(date: Date): void {
+    this.selectedDate = date;
+    this.updateActiveImage();
+    this.checkAvailability();
+  }
+
+  checkAvailability(): void {
+    if (!this.selectedDate) return;
+
+    const formattedDate = this.formatDate(this.selectedDate);
+
+    // Reset state
+    this.isRestricted = false;
+    this.restrictionReason = '';
+    this.orderExists = false;
+
+    // 1. Check existing order from local data
+    const hasOrder = this.userOrders.some(
+      (o) => o.order_date === formattedDate
+    );
+    if (hasOrder) {
+      this.isRestricted = true;
+      this.orderExists = true;
+      this.isRestricted = true;
+      this.orderExists = true;
+      this.restrictionReason = this.UILabels.MENU_SELECTION.ORDER_EXISTS;
+    } else {
+      // 2. Check Deadline logic
+      this.validateDeadline();
+    }
+
+    if (!this.isRestricted) {
+      this.loadMenuFromBackend();
+    } else {
+      this.menuSections = [];
+    }
+  }
+
+  validateDeadline(): void {
+    this.isRestricted = this.isDateDeadlinePassed(this.selectedDate);
+    if (this.isRestricted) {
+      if (this.orderDeadlineDaysAhead === 0) {
+        const now = new Date();
+        const today = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate()
+        );
+        const selectedDateMidnight = new Date(
+          this.selectedDate.getFullYear(),
+          this.selectedDate.getMonth(),
+          this.selectedDate.getDate()
+        );
+
+        if (selectedDateMidnight.getTime() === today.getTime()) {
+          this.restrictionReason =
+            this.UILabels.MENU_SELECTION.DEADLINE_PASSED_TODAY;
+        } else {
+          this.restrictionReason =
+            this.UILabels.MENU_SELECTION.DEADLINE_PASSED_PAST;
+        }
+      } else {
+        const now = new Date();
+        const today = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate()
+        );
+        const selectedDateMidnight = new Date(
+          this.selectedDate.getFullYear(),
+          this.selectedDate.getMonth(),
+          this.selectedDate.getDate()
+        );
+
+        if (selectedDateMidnight < today) {
+          this.restrictionReason =
+            this.UILabels.MENU_SELECTION.DEADLINE_PASSED_PAST;
+        } else {
+          this.restrictionReason =
+            this.UILabels.MENU_SELECTION.DEADLINE_DAYS_AHEAD.replace(
+              '{days}',
+              String(this.orderDeadlineDaysAhead)
+            );
+        }
+      }
+    }
+  }
+
+  loadMenuFromBackend(): void {
+    if (!this.selectedDate) return;
+
+    const formattedDate = this.formatDate(this.selectedDate);
+    this.menusService.getByDate(formattedDate).subscribe({
+      next: (response) => {
+        const dishes = response.data?.dishes || [];
+        this.menuSections = [];
+
+        const grouped: Record<number, MenuOption[]> = {};
+        dishes.forEach((dish: any) => {
+          const options = JSON.parse(dish.options || '[]') as string[];
+          if (!grouped[dish.dish_type_id]) grouped[dish.dish_type_id] = [];
+          grouped[dish.dish_type_id].push(
+            ...options.map((name) => ({ name, selected: false }))
+          );
+        });
+
+        this.menuSections = Object.entries(grouped).map(
+          ([typeId, options]) => ({
+            title:
+              AppConstants.DISH_TYPES[
+                +typeId as keyof typeof AppConstants.DISH_TYPES
+              ] || `${this.UILabels.MENU_SELECTION.TYPE_PREFIX} ${typeId}`,
+            options,
+          })
+        );
+      },
+      error: (err) => {
+        console.error(ConsoleMessages.ERRORS.LOADING_MENU, err);
+        this.menuSections = [];
+      },
+    });
+  }
+
+  selectMenuType(index: number): void {
+    this.menuTypes.forEach((type, i) => (type.selected = i === index));
+  }
+
+  selectOption(sectionIndex: number, optionIndex: number): void {
+    const option = this.menuSections[sectionIndex].options[optionIndex];
+    option.selected = !option.selected;
+
+    if (option.selected) {
+      this.menuSections[sectionIndex].options.forEach((opt, i) => {
+        if (i !== optionIndex) opt.selected = false;
+      });
+    }
+  }
+
+  toggleTaper(): void {
+    this.taperSelected = !this.taperSelected;
+  }
+
+  confirmSelection(): void {
+    const selectedMenuType = this.menuTypes.find((type) => type.selected);
+    if (!selectedMenuType) {
+      this.alertService.show('error', Messages.ORDERS.SELECT_MENU_TYPE, '');
+      return;
+    }
+
+    const toLocalMidnight = (d: Date | string | number): Date => {
+      const dt = new Date(d);
+      return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+    };
+
+    const today = toLocalMidnight(new Date());
+    const selectedDateCopy = toLocalMidnight(this.selectedDate);
+
+    if (this.isDateDeadlinePassed(selectedDateCopy)) {
+      this.alertService.show(
+        'error',
+        this.restrictionReason ||
+          "La data seleccionada no és vàlida segons l'antelació configurada.",
+        ''
+      );
+      return;
+    }
+
+    if (selectedDateCopy < today) {
+      this.alertService.show('error', Messages.ORDERS.NO_PAST_ORDERS, '');
+      return;
+    }
+
+    const sections = this.filteredMenuSections();
+    const missingSelection = sections.some(
+      (section) => !section.options.some((option) => option.selected)
+    );
+    if (missingSelection) {
+      this.alertService.show('error', Messages.ORDERS.SELECT_ALL_OPTIONS, '');
+      return;
+    }
+
+    // Fetch latest balance before showing the modal to ensure it's up to date
+    this.authService.checkAuth(true).subscribe({
+      next: (user) => {
+        this.userBalance = user.balance || 0;
+
+        const price = this.calculateOrderPrice();
+        this.orderPrice = price;
+
+        // Detailed breakdown
+        this.orderBasePrice = this.calculateBasePrice();
+        this.orderTaperSurcharge = this.taperSelected
+          ? this.prices.taper_price
+          : 0;
+
+        console.log('Price calculation (refreshed):', {
+          orderPrice: this.orderPrice,
+          basePrice: this.orderBasePrice,
+          taperSurcharge: this.orderTaperSurcharge,
+          userBalance: this.userBalance,
+        });
+
+        this.hasEnoughBalance = this.userBalance >= this.orderPrice;
+
+        // Show confirmation modal
+        this.showConfirmModal = true;
+      },
+      error: (err) => {
+        console.error('Error refreshing balance before confirmation:', err);
+        this.alertService.show(
+          'error',
+          this.UILabels.MENU_SELECTION.ERROR_BALANCE_UPDATE,
+          ''
+        );
+      },
+    });
+  }
+
+  calculateBasePrice(): number {
+    const selectedType = this.getSelectedMenuTypeName();
+    let basePrice = 0;
+
+    if (
+      selectedType.includes('Primer plat') &&
+      selectedType.includes('Segon plat')
+    ) {
+      basePrice = this.prices.menu_price;
+    } else if (selectedType.includes('Primer plat')) {
+      basePrice = this.prices.half_menu_first_price;
+    } else if (selectedType.includes('Segon plat')) {
+      basePrice = this.prices.half_menu_second_price;
+    }
+    return basePrice;
+  }
+
+  calculateOrderPrice(): number {
+    const selectedType = this.getSelectedMenuTypeName();
+    let basePrice = 0;
+
+    if (
+      selectedType.includes('Primer plat') &&
+      selectedType.includes('Segon plat')
+    ) {
+      basePrice = this.prices.menu_price;
+    } else if (selectedType.includes('Primer plat')) {
+      basePrice = this.prices.half_menu_first_price;
+    } else if (selectedType.includes('Segon plat')) {
+      basePrice = this.prices.half_menu_second_price;
+    }
+
+    const taperSurcharge = this.taperSelected ? this.prices.taper_price : 0;
+    return Math.round((basePrice + taperSurcharge) * 100) / 100;
+  }
+
+  onRecharge(): void {
+    this.showConfirmModal = false;
+    this.route.navigate([NavigationConfig.PAYMENT_TOP_UP], {
+      queryParams: { amount: this.orderPrice },
+    });
+  }
+
+  cancelConfirmation(): void {
+    this.showConfirmModal = false;
+  }
+
+  submitOrder(): void {
+    const selectedMenuType = this.menuTypes.find((type) => type.selected);
+    if (!selectedMenuType) return;
+
+    const toLocalMidnight = (d: Date | string | number): Date => {
+      const dt = new Date(d);
+      return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+    };
+
+    const selectedDateCopy = toLocalMidnight(this.selectedDate);
+    const order_type_id = selectedMenuType.id;
+
+    const option1 =
+      this.menuSections
+        .find((s) => s.title === AppConstants.DISH_TYPES[1])
+        ?.options.find((o) => o.selected)?.name || '';
+    const option2 =
+      this.menuSections
+        .find((s) => s.title === AppConstants.DISH_TYPES[2])
+        ?.options.find((o) => o.selected)?.name || '';
+    const option3 =
+      this.menuSections
+        .find((s) => s.title === AppConstants.DISH_TYPES[3])
+        ?.options.find((o) => o.selected)?.name || '';
+
+    const allergies = '';
+    const order_date = this.formatDate(selectedDateCopy);
+
+    const payload = {
+      order_date,
+      allergies,
+      order_type_id,
+      order_status_id: AppConstants.DEFAULT_ORDER_STATUS_ID,
+      has_tupper: this.taperSelected,
+      option1,
+      option2,
+      option3,
+    };
+
+    this.ordersService.createOrder(payload).subscribe({
+      next: (response) => {
+        this.showConfirmModal = false;
+        this.alertService.show('success', Messages.ORDERS.ORDER_SUCCESS, '');
+        this.route.navigate(['/history']);
+      },
+      error: (err) => {
+        this.alertService.show('error', Messages.ORDERS.ORDER_ERROR, '');
+        console.error(err);
+      },
+    });
+  }
+
+  getSelectedOptionsSummary(): string[] {
+    const options: string[] = [];
+    this.filteredMenuSections().forEach((section) => {
+      const selected = section.options.find((o) => o.selected);
+      if (selected) options.push(selected.name);
+    });
+    return options;
+  }
+
+  getSelectedMenuTypeName(): string {
+    return this.menuTypes.find((t) => t.selected)?.name || '';
+  }
+
+  hasSelectedMenuType(): boolean {
+    return this.menuTypes.some((type) => type.selected);
+  }
+
+  getActualIndex(title: string): number {
+    return this.menuSections.findIndex((section) => section.title === title);
+  }
+
+  filteredMenuSections(): MenuSection[] {
+    const selected = this.menuTypes.find((type) => type.selected)?.name;
+
+    if (!selected) return [];
+
+    if (selected.includes('Primer plat') && selected.includes('Segon plat')) {
+      return this.menuSections;
+    } else if (selected.includes('Primer plat')) {
+      return this.menuSections.filter(
+        (section) =>
+          section.title === AppConstants.DISH_TYPES[1] ||
+          section.title === AppConstants.DISH_TYPES[3]
+      );
+    } else if (selected.includes('Segon plat')) {
+      return this.menuSections.filter(
+        (section) =>
+          section.title === AppConstants.DISH_TYPES[2] ||
+          section.title === AppConstants.DISH_TYPES[3]
+      );
+    } else {
+      return [];
+    }
+  }
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  downloadActiveImage(): void {
+    if (!this.activeMenuImage) return;
+
+    this.imageService.downloadImage(this.activeMenuImage.path).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `menu-${this.formatDate(this.selectedDate)}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+
+        // Cleanup
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        console.error('Error downloading image', err);
+        console.error('Error downloading image', err);
+        this.alertService.show(
+          'error',
+          this.UILabels.MENU_SELECTION.ERROR_IMAGE_DOWNLOAD,
+          ''
+        );
+      },
+    });
+  }
+}

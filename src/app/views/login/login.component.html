@@ -1,0 +1,175 @@
+<main
+  class="min-h-screen bg-slate-50/50 flex items-center justify-center p-6"
+  @fadeIn
+>
+  <section
+    class="w-full max-w-md bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden"
+  >
+    <div class="p-10 lg:p-12">
+      <!-- Header -->
+      <header class="flex flex-col items-center text-center mb-10">
+        <h1 class="text-3xl font-bold text-slate-800 tracking-tight mb-2">
+          {{ UILabels.LOGIN.TITLE }}
+        </h1>
+        <p class="text-slate-500 font-medium">
+          {{ UILabels.LOGIN.SUBTITLE }}
+        </p>
+      </header>
+
+      <!-- Login Form -->
+      <form
+        *ngIf="!show2FA"
+        [formGroup]="loginForm"
+        (ngSubmit)="onSubmit()"
+        class="space-y-6"
+      >
+        <!-- Email Field -->
+        <div class="space-y-2">
+          <label for="email" class="text-sm font-bold text-slate-700 ml-1">
+            {{ UILabels.LOGIN.EMAIL_LABEL }}
+          </label>
+          <div class="relative group">
+            <div
+              class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors"
+            >
+              <mat-icon class="text-[20px] w-5 h-5">mail_outline</mat-icon>
+            </div>
+            <input
+              id="email"
+              type="email"
+              formControlName="user"
+              [placeholder]="UILabels.LOGIN.EMAIL_PLACEHOLDER"
+              class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-700 placeholder:text-slate-400 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none font-medium"
+            />
+          </div>
+        </div>
+
+        <!-- Password Field -->
+        <div class="space-y-2">
+          <label for="password" class="text-sm font-bold text-slate-700 ml-1">
+            {{ UILabels.LOGIN.PASSWORD_LABEL }}
+          </label>
+          <div class="relative group">
+            <div
+              class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors"
+            >
+              <mat-icon class="text-[20px] w-5 h-5">lock_outline</mat-icon>
+            </div>
+            <input
+              id="password"
+              type="password"
+              formControlName="password"
+              [placeholder]="UILabels.LOGIN.PASSWORD_PLACEHOLDER"
+              class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-700 placeholder:text-slate-400 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none font-medium"
+            />
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          [disabled]="isSubmitting"
+          class="w-full bg-primary hover:bg-primary-dark disabled:bg-slate-300 text-white py-4 rounded-2xl font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+        >
+          <mat-icon *ngIf="!isSubmitting" class="text-[20px] w-5 h-5"
+            >login</mat-icon
+          >
+          <div
+            *ngIf="isSubmitting"
+            class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"
+          ></div>
+          <span>{{
+            isSubmitting
+              ? UILabels.LOGIN.SUBMIT_BUTTON_LOADING
+              : UILabels.LOGIN.SUBMIT_BUTTON
+          }}</span>
+        </button>
+
+        <!-- Links -->
+        <div class="flex flex-col gap-4 pt-4">
+          <!-- Google Sign In -->
+          <a
+            [href]="googleAuthUrl"
+            class="w-full bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 py-3.5 rounded-2xl font-bold transition-all flex items-center justify-center gap-3 group"
+          >
+            <img
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              class="w-5 h-5"
+              alt="Google"
+            />
+            <span>{{ UILabels.LOGIN.GOOGLE_LOGIN_BUTTON }}</span>
+          </a>
+
+          <div class="h-px bg-slate-100 w-full"></div>
+
+          <button
+            type="button"
+            (click)="forgotPassword()"
+            class="text-sm font-bold text-primary hover:text-primary-dark transition-colors"
+          >
+            {{ UILabels.LOGIN.FORGOT_PASSWORD_LINK }}
+          </button>
+
+          <div class="h-px bg-slate-100 w-full"></div>
+
+          <button
+            type="button"
+            (click)="register()"
+            class="text-sm font-bold text-slate-500 hover:text-slate-700 transition-colors"
+          >
+            {{ UILabels.LOGIN.REGISTER_LINK }}
+          </button>
+        </div>
+      </form>
+
+      <!-- 2FA Form -->
+      <div *ngIf="show2FA" class="space-y-6" @fadeIn>
+        <div class="text-center mb-6">
+          <div
+            class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4"
+          >
+            <mat-icon class="text-primary text-3xl w-8 h-8">security</mat-icon>
+          </div>
+          <h2 class="text-xl font-bold text-slate-800 mb-2">
+            {{ UILabels.PROFILE.TWO_FACTOR_TITLE }}
+          </h2>
+          <p class="text-slate-500 text-sm">
+            {{ UILabels.PROFILE.TWO_FACTOR_CODE_LABEL }}
+          </p>
+        </div>
+
+        <div class="space-y-4">
+          <input
+            type="text"
+            maxlength="6"
+            [(ngModel)]="twoFactorCode"
+            placeholder="000000"
+            class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-center text-3xl font-black tracking-[0.5em] text-slate-700 placeholder:text-slate-300 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+          />
+
+          <button
+            (click)="on2FASubmit()"
+            [disabled]="isSubmitting || twoFactorCode.length < 6"
+            class="w-full bg-primary hover:bg-primary-dark disabled:bg-slate-300 text-white py-4 rounded-2xl font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+          >
+            <mat-icon *ngIf="!isSubmitting" class="text-[20px] w-5 h-5"
+              >verified_user</mat-icon
+            >
+            <div
+              *ngIf="isSubmitting"
+              class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"
+            ></div>
+            <span>{{ UILabels.PROFILE.TWO_FACTOR_VERIFY }}</span>
+          </button>
+
+          <button
+            (click)="cancel2FA()"
+            class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 py-3.5 rounded-2xl font-bold transition-all"
+          >
+            {{ UILabels.PROFILE.TWO_FACTOR_CANCEL }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
