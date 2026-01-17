@@ -23,11 +23,11 @@ import { NavigationConfig } from './config/navigation.config';
 })
 export class AppComponent {
   showNav = true;
-  title = 'testMenu1';
+  title = 'food4ducks-front';
 
   constructor(
     private router: Router,
-    @Inject(DOCUMENT) private document: Document
+    @Inject(DOCUMENT) private document: Document,
   ) {
     this.router.events.subscribe(() => {
       const url = this.router.url.split('?')[0];
