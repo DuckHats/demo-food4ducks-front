@@ -15,7 +15,8 @@ export class AuthService extends BaseService {
   private cachedTimestamp = 0;
 
   getCsrfCookie(): Observable<any> {
-    return this.http.get('/sanctum/csrf-cookie');
+    const backendUrl = this.baseUrl.replace('/api/v1', '');
+    return this.http.get(`${backendUrl}/sanctum/csrf-cookie`);
   }
 
   getGoogleAuthUrl(): string {
@@ -24,7 +25,7 @@ export class AuthService extends BaseService {
 
   login(credentials: { user: string; password: string }): Observable<any> {
     return this.getCsrfCookie().pipe(
-      switchMap(() => this.post('login', credentials))
+      switchMap(() => this.post('login', credentials)),
     );
   }
 
@@ -64,7 +65,7 @@ export class AuthService extends BaseService {
         this.cachedTimestamp = 0;
         // propagate error
         throw err;
-      })
+      }),
     );
   }
 
@@ -95,7 +96,7 @@ export class AuthService extends BaseService {
 
             localStorage.setItem(
               AppConstants.STORAGE_KEYS.USER,
-              JSON.stringify(this.cachedUser)
+              JSON.stringify(this.cachedUser),
             );
 
             return this.cachedUser;
@@ -114,15 +115,17 @@ export class AuthService extends BaseService {
           this.cachedUser = null;
           this.cachedTimestamp = 0;
           throw err;
-        })
+        }),
       );
   }
 
   checkIfAdmin(): Observable<boolean> {
     return this.http
-      .get<{ status: number; data: { admin: boolean }; message: string }>(
-        `${this.baseUrl}/users/is_admin`
-      )
+      .get<{
+        status: number;
+        data: { admin: boolean };
+        message: string;
+      }>(`${this.baseUrl}/users/is_admin`)
       .pipe(
         map((response) => {
           if (response.status == 200 && response.data.admin == true) {
@@ -134,7 +137,7 @@ export class AuthService extends BaseService {
 
             return false;
           }
-        })
+        }),
       );
   }
 

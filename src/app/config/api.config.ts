@@ -1,4 +1,4 @@
 export const API_CONFIG = {
-  baseUrl: '/api/v1',
+  baseUrl: 'https://api-food4ducks-back.duckhats.cat/api/v1',
   timeout: 5000,
 };
