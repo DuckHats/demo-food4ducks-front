@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../Services/Auth/auth.service';
 import { UserService } from '../../Services/User/user.service';
 import { ErrorMessages } from '../../config/errors.config';
+import { ConfigService } from '../../Services/Config/config.service';
 import { AlertService } from '../../Services/Alert/alert.service';
 import { NavigationConfig } from '../../config/navigation.config';
 import { Messages } from '../../config/messages.config';
@@ -32,7 +33,7 @@ import { animate, style, transition, trigger } from '@angular/animations';
         style({ opacity: 0, transform: 'translateY(10px)' }),
         animate(
           '400ms ease-out',
-          style({ opacity: 1, transform: 'translateY(0)' })
+          style({ opacity: 1, transform: 'translateY(0)' }),
         ),
       ]),
     ]),
@@ -49,6 +50,7 @@ export class LoginComponent {
   pendingEmail = '';
   pendingPassword = '';
   isSocialLogin = false;
+  disableRegistration = false;
 
   constructor(
     private fb: FormBuilder,
@@ -56,7 +58,8 @@ export class LoginComponent {
     private userService: UserService,
     private router: Router,
     private alertService: AlertService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private configService: ConfigService,
   ) {
     this.loginForm = this.fb.group({
       user: ['', [Validators.required]],
@@ -67,13 +70,15 @@ export class LoginComponent {
   }
 
   ngOnInit(): void {
+    this.checkRegistrationStatus();
+
     this.route.queryParams.subscribe((params) => {
       if (params['error']) {
         if (params['error'] === 'invalid_domain') {
           this.alertService.show(
             'error',
             ErrorMessages.ACCESS_DENIED,
-            ErrorMessages.INVALID_DOMAIN
+            ErrorMessages.INVALID_DOMAIN,
           );
         } else if (params['error'] === 'account_inactive') {
           this.alertService.show('error', ErrorMessages.ACCOUNT_INACTIVE, '');
@@ -106,6 +111,15 @@ export class LoginComponent {
     });
   }
 
+  checkRegistrationStatus() {
+    this.configService.getPublicConfigurations().subscribe((response) => {
+      if (response.status === 'success' && response.data) {
+        const disabled = response.data.disable_registration;
+        this.disableRegistration = disabled === '1' || disabled === true;
+      }
+    });
+  }
+
   onSubmit(): void {
     if (this.loginForm.valid) {
       this.isSubmitting = true;
@@ -124,7 +138,7 @@ export class LoginComponent {
                     this.alertService.show(
                       'success',
                       Messages.AUTH.WELCOME,
-                      message
+                      message,
                     );
                     if (isAdmin) {
                       this.router.navigateByUrl(NavigationConfig.ADMIN, {
@@ -138,10 +152,10 @@ export class LoginComponent {
                     this.alertService.show(
                       'success',
                       Messages.AUTH.WELCOME,
-                      Messages.AUTH.WELCOME_USER
+                      Messages.AUTH.WELCOME_USER,
                     );
                     this.router.navigate([NavigationConfig.HOME]);
-                  }
+                  },
                 );
               },
               error: (err) => {
@@ -149,7 +163,7 @@ export class LoginComponent {
                 this.alertService.show(
                   'error',
                   Messages.USERS.LOADING_ERROR,
-                  ''
+                  '',
                 );
                 this.isSubmitting = false;
               },
@@ -189,7 +203,7 @@ export class LoginComponent {
       this.alertService.show(
         'warning',
         Messages.VALIDATION.REQUIRED_FIELDS,
-        ''
+        '',
       );
     }
   }
@@ -216,7 +230,7 @@ export class LoginComponent {
                     this.alertService.show(
                       'success',
                       Messages.AUTH.WELCOME,
-                      message
+                      message,
                     );
                     if (isAdmin) {
                       this.router.navigateByUrl(NavigationConfig.ADMIN, {
@@ -234,7 +248,7 @@ export class LoginComponent {
             this.alertService.show(
               'error',
               this.UILabels.PROFILE.TWO_FACTOR_ERROR,
-              ''
+              '',
             );
             this.isSubmitting = false;
           },
