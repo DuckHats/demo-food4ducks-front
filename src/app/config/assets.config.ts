@@ -8,16 +8,16 @@ export const AssetsConfig = {
 
   // Icons
   ICONS: {
-    FAVICON: '/icons/icon-96x96.png',
+    FAVICON: '/icons/duckhats.png',
     PWA: {
-      ICON_72: 'icons/icon-72x72.png',
-      ICON_96: 'icons/icon-96x96.png',
-      ICON_128: 'icons/icon-128x128.png',
-      ICON_144: 'icons/icon-144x144.png',
-      ICON_152: 'icons/icon-152x152.png',
-      ICON_192: 'icons/icon-192x192.png',
-      ICON_384: 'icons/icon-384x384.png',
-      ICON_512: 'icons/icon-512x512.png',
+      ICON_72: 'icons/duckhats.png',
+      ICON_96: 'icons/duckhats.png',
+      ICON_128: 'icons/duckhats.png',
+      ICON_144: 'icons/duckhats.png',
+      ICON_152: 'icons/duckhats.png',
+      ICON_192: 'icons/duckhats.png',
+      ICON_384: 'icons/duckhats.png',
+      ICON_512: 'icons/duckhats.png',
     },
   },
 
