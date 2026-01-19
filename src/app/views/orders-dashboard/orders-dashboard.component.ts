@@ -57,7 +57,7 @@ import { LoaderComponent } from '../../components/loader/loader.component';
         style({ opacity: 0, transform: 'translateY(10px)' }),
         animate(
           '400ms ease-out',
-          style({ opacity: 1, transform: 'translateY(0)' })
+          style({ opacity: 1, transform: 'translateY(0)' }),
         ),
       ]),
     ]),
@@ -105,7 +105,7 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private dialog: MatDialog,
     private sidebarService: SidebarService,
-    private configService: ConfigurationService
+    private configService: ConfigurationService,
   ) {}
 
   ngOnInit(): void {
@@ -162,10 +162,19 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
     this.userPage = 1;
     this.orderPage = 1;
     this.loadAllData();
+    // Close mobile menu on tab change
+    this.isMobileMenuOpen = false;
   }
 
   toggleSidebar(): void {
     this.sidebarService.toggle();
+  }
+
+  // Mobile Menu Logic
+  isMobileMenuOpen = false;
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
   }
 
   loadAllData(): void {
@@ -225,7 +234,7 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
               console.error(
                 ConsoleMessages.ERRORS.PARSING_OPTIONS(dish.id),
                 dish.options,
-                e
+                e,
               );
             }
 
@@ -245,11 +254,11 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
           } else {
             console.error(
               ConsoleMessages.ERRORS.FETCHING_MENU_FOR_DATE(date),
-              err
+              err,
             );
           }
           return { date, menus: [] };
-        })
+        }),
     );
 
     Promise.all(menuPromises).then((results) => {
@@ -420,7 +429,7 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
           'error',
           Messages.IMPORT_EXPORT.EXPORT_ERROR,
           '',
-          3000
+          3000,
         );
       },
     });
@@ -441,7 +450,7 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
           'error',
           Messages.IMPORT_EXPORT.EXPORT_ERROR,
           '',
-          3000
+          3000,
         );
       },
     });
@@ -462,7 +471,7 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
           'error',
           Messages.IMPORT_EXPORT.EXPORT_ERROR,
           '',
-          3000
+          3000,
         );
       },
     });
@@ -503,7 +512,7 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
       moveItemInArray(
         event.container.data,
         event.previousIndex,
-        event.currentIndex
+        event.currentIndex,
       );
     } else {
       const order = event.previousContainer.data[event.previousIndex];
@@ -513,7 +522,7 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
         event.previousContainer.data,
         event.container.data,
         event.previousIndex,
-        event.currentIndex
+        event.currentIndex,
       );
 
       // Update backend
@@ -528,7 +537,7 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
         this.alertService.show(
           'success',
           Messages.ORDERS.STATUS_UPDATE_SUCCESS,
-          ''
+          '',
         );
         this.loadOrders(this.formatDate(this.selectedDate));
       },
@@ -536,7 +545,7 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
         this.alertService.show(
           'error',
           Messages.ORDERS.STATUS_UPDATE_ERROR,
-          ''
+          '',
         );
       },
     });
@@ -584,7 +593,7 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
         this.alertService.show(
           'success',
           Messages.USERS.STATUS_CHANGE_SUCCESS(isActive),
-          ''
+          '',
         );
       },
       error: (err) => {
@@ -622,7 +631,7 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
                 'success',
                 Messages.IMPORT_EXPORT.MENUS_IMPORT_SUCCESS,
                 '',
-                3000
+                3000,
               );
               this.loadMenusWeek();
             },
@@ -631,7 +640,7 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
                 'error',
                 Messages.IMPORT_EXPORT.MENUS_IMPORT_ERROR,
                 '',
-                3000
+                3000,
               );
             },
           });
@@ -642,7 +651,7 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
                 'success',
                 Messages.IMPORT_EXPORT.USERS_IMPORT_SUCCESS,
                 '',
-                3000
+                3000,
               );
               this.loadUsers();
             },
@@ -651,7 +660,7 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
                 'error',
                 Messages.IMPORT_EXPORT.USERS_IMPORT_ERROR,
                 '',
-                3000
+                3000,
               );
             },
           });
@@ -669,7 +678,7 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
             'success',
             Messages.IMPORT_EXPORT.MENUS_IMPORT_SUCCESS,
             '',
-            3000
+            3000,
           );
           this.loadMenusWeek();
         },
@@ -678,7 +687,7 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
             'error',
             Messages.IMPORT_EXPORT.MENUS_IMPORT_ERROR,
             '',
-            3000
+            3000,
           );
         },
       });
@@ -689,7 +698,7 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
             'success',
             Messages.IMPORT_EXPORT.USERS_IMPORT_SUCCESS,
             '',
-            3000
+            3000,
           );
           this.loadUsers();
         },
@@ -698,7 +707,7 @@ export class OrdersDashboardComponent implements OnInit, OnDestroy {
             'error',
             Messages.IMPORT_EXPORT.USERS_IMPORT_ERROR,
             '',
-            3000
+            3000,
           );
         },
       });

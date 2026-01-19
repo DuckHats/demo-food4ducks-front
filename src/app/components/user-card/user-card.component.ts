@@ -51,13 +51,13 @@ import { LoaderComponent } from '../loader/loader.component';
         style({ opacity: 0, transform: 'scale(0.95) translateY(10px)' }),
         animate(
           '400ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-          style({ opacity: 1, transform: 'scale(1) translateY(0)' })
+          style({ opacity: 1, transform: 'scale(1) translateY(0)' }),
         ),
       ]),
       transition(':leave', [
         animate(
           '200ms ease-in',
-          style({ opacity: 0, transform: 'scale(0.98) translateY(5px)' })
+          style({ opacity: 0, transform: 'scale(0.98) translateY(5px)' }),
         ),
       ]),
     ]),
@@ -101,7 +101,7 @@ export class UserCardComponent implements OnInit {
     private alertService: AlertService,
     private fb: FormBuilder,
     private sidebarService: SidebarService,
-    private twoFactorAuthService: TwoFactorAuthService
+    private twoFactorAuthService: TwoFactorAuthService,
   ) {
     this.profileForm = this.fb.group({
       allergies: [[]],
@@ -111,6 +111,14 @@ export class UserCardComponent implements OnInit {
 
   setActiveTab(tab: 'profile' | 'allergies' | 'config' | 'transactions') {
     this.activeTab = tab;
+    this.isMobileMenuOpen = false;
+  }
+
+  // Mobile Menu Logic
+  isMobileMenuOpen = false;
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
   }
 
   goToTopUp() {
@@ -181,7 +189,7 @@ export class UserCardComponent implements OnInit {
           this.alertService.show(
             'success',
             Messages.USERS.ALLERGIES_SAVED,
-            Messages.USERS.ALLERGIES_SAVED_DESC
+            Messages.USERS.ALLERGIES_SAVED_DESC,
           );
           this.loadData();
         },
@@ -189,7 +197,7 @@ export class UserCardComponent implements OnInit {
           this.alertService.show(
             'error',
             Messages.GENERIC.ERROR,
-            Messages.USERS.ALLERGIES_ERROR
+            Messages.USERS.ALLERGIES_ERROR,
           );
           console.error(err);
         },
@@ -235,7 +243,7 @@ export class UserCardComponent implements OnInit {
         this.alertService.show(
           'error',
           Messages.GENERIC.ERROR,
-          this.UILabels.PROFILE.TWO_FACTOR_ERROR_GENERATE
+          this.UILabels.PROFILE.TWO_FACTOR_ERROR_GENERATE,
         );
       },
     });
@@ -256,7 +264,7 @@ export class UserCardComponent implements OnInit {
         this.alertService.show(
           'success',
           '2FA ' + this.UILabels.PROFILE.TWO_FACTOR_DISABLED,
-          this.UILabels.PROFILE.TWO_FACTOR_SUCCESS_DISABLE
+          this.UILabels.PROFILE.TWO_FACTOR_SUCCESS_DISABLE,
         );
         this.loadData();
       },
@@ -264,7 +272,7 @@ export class UserCardComponent implements OnInit {
         this.alertService.show(
           'error',
           Messages.GENERIC.ERROR,
-          this.UILabels.PROFILE.TWO_FACTOR_ERROR_DISABLE
+          this.UILabels.PROFILE.TWO_FACTOR_ERROR_DISABLE,
         );
       },
     });

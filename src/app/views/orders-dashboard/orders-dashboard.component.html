@@ -1,10 +1,39 @@
 <div class="min-h-screen bg-slate-50/50 flex flex-col lg:flex-row" @fadeIn>
   <!-- Sidebar Navigation -->
+  <!-- Mobile Header -->
+  <header
+    class="lg:hidden bg-white border-b border-slate-200 p-4 flex items-center justify-between sticky top-0 z-30"
+  >
+    <div class="flex items-center gap-3">
+      <button
+        (click)="toggleMobileMenu()"
+        class="p-2 -ml-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors"
+      >
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span class="font-bold text-slate-800 text-lg">{{
+        UILabels.ADMIN.DASHBOARD.TITLE
+      }}</span>
+    </div>
+  </header>
+
+  <!-- Mobile Backdrop -->
+  <div
+    *ngIf="isMobileMenuOpen"
+    (click)="toggleMobileMenu()"
+    class="fixed inset-0 bg-black/20 z-[190] lg:hidden backdrop-blur-sm transition-opacity"
+    @fadeIn
+  ></div>
+
+  <!-- Sidebar Navigation -->
   <aside
-    class="bg-white border-b lg:border-b-0 lg:border-r border-slate-200 flex-shrink-0 z-20 transition-all duration-300 relative group/sidebar"
+    class="fixed lg:sticky top-0 bottom-0 left-0 bg-white border-r border-slate-200 z-[200] lg:z-20 transition-all duration-300 flex flex-col group/sidebar h-screen"
     [ngClass]="{
-      'w-full lg:w-72': !isSidebarCollapsed,
-      'w-full lg:w-20': isSidebarCollapsed
+      'translate-x-0': isMobileMenuOpen,
+      '-translate-x-full lg:translate-x-0': !isMobileMenuOpen,
+      'w-72 lg:w-72': !isSidebarCollapsed,
+      'w-72 lg:w-20': isSidebarCollapsed,
+      'shadow-2xl lg:shadow-none': isMobileMenuOpen,
     }"
   >
     <!-- Collapse Toggle (Desktop) -->
@@ -15,16 +44,21 @@
     >
       <mat-icon class="text-sm">chevron_left</mat-icon>
     </button>
+
     <div
-      class="lg:sticky lg:top-0 transition-all duration-300"
-      [ngClass]="isSidebarCollapsed ? 'p-4' : 'p-6'"
+      class="flex-1 flex flex-col p-4 lg:p-6 transition-all duration-300"
+      [class.lg:p-4]="isSidebarCollapsed"
     >
       <div
-        class="flex items-center justify-between mb-8 lg:mb-8 px-2 overflow-hidden"
+        class="flex items-center justify-between mb-8 px-2 overflow-hidden flex-shrink-0"
       >
         <div
           class="flex items-center"
-          [ngClass]="isSidebarCollapsed ? 'justify-center w-full' : 'gap-3'"
+          [ngClass]="
+            isSidebarCollapsed
+              ? 'lg:justify-center w-full'
+              : 'gap-3 justify-start'
+          "
         >
           <div
             class="w-10 h-10 bg-primary rounded-xl flex-shrink-0 flex items-center justify-center shadow-lg shadow-primary/20 transition-all duration-300"
@@ -35,49 +69,53 @@
             class="text-xl font-bold text-slate-800 tracking-tight whitespace-nowrap transition-all duration-300 overflow-hidden"
             [ngClass]="
               isSidebarCollapsed
-                ? 'opacity-0 w-0 ml-0'
+                ? 'lg:opacity-0 lg:w-0 lg:ml-0 opacity-100 w-auto ml-3'
                 : 'opacity-100 w-auto ml-3'
             "
           >
             {{ UILabels.ADMIN.DASHBOARD.TITLE }}
           </h1>
         </div>
-        <!-- Mobile Toggle -->
+        <!-- Close Mobile Menu Button -->
         <button
-          (click)="toggleSidebar()"
-          class="lg:hidden p-2 text-slate-400 hover:text-primary transition-all"
-          [ngClass]="{ 'rotate-180': isSidebarCollapsed }"
+          (click)="toggleMobileMenu()"
+          class="lg:hidden p-2 -mr-2 text-slate-400 hover:text-primary transition-all"
         >
-          <mat-icon>{{ isSidebarCollapsed ? "menu_open" : "menu" }}</mat-icon>
+          <mat-icon>close</mat-icon>
         </button>
       </div>
 
       <nav
-        class="flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-4 lg:pb-0 no-scrollbar"
+        class="flex flex-col gap-2 overflow-y-auto no-scrollbar flex-grow p-4"
       >
         <!-- ORDERS -->
         <button
           (click)="setActiveTab(UILabels.ADMIN.DASHBOARD.TABS.ORDERS)"
-          class="flex items-center rounded-2xl text-[15px] font-semibold transition-all duration-300 whitespace-nowrap group relative overflow-hidden h-12"
+          class="flex items-center rounded-2xl text-[15px] font-semibold transition-all duration-300 whitespace-nowrap group relative overflow-hidden h-12 flex-shrink-0 w-full"
           [ngClass]="[
             activeTab === UILabels.ADMIN.DASHBOARD.TABS.ORDERS
               ? 'bg-primary-light/50 text-primary-dark'
               : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900',
-            isSidebarCollapsed ? 'lg:justify-center w-full px-0' : 'px-4 gap-3'
+            isSidebarCollapsed
+              ? 'justify-start lg:justify-center px-4 lg:px-0'
+              : 'px-4 gap-3',
           ]"
         >
           <div
             *ngIf="activeTab === UILabels.ADMIN.DASHBOARD.TABS.ORDERS"
-            class="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-r-lg hidden lg:block"
+            class="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-r-lg"
           ></div>
           <mat-icon
             class="group-hover:scale-110 transition-transform flex-shrink-0"
+            [ngClass]="{ 'mr-3': isSidebarCollapsed }"
             >receipt_long</mat-icon
           >
           <span
             class="transition-all duration-300 whitespace-nowrap"
             [ngClass]="
-              isSidebarCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
+              isSidebarCollapsed
+                ? 'lg:opacity-0 lg:w-0 opacity-100 w-auto'
+                : 'opacity-100 w-auto'
             "
           >
             {{ UILabels.ADMIN.DASHBOARD.LABELS.ORDERS }}
@@ -87,26 +125,31 @@
         <!-- MENUS -->
         <button
           (click)="setActiveTab(UILabels.ADMIN.DASHBOARD.TABS.MENUS)"
-          class="flex items-center rounded-2xl text-[15px] font-semibold transition-all duration-300 whitespace-nowrap group relative overflow-hidden h-12"
+          class="flex items-center rounded-2xl text-[15px] font-semibold transition-all duration-300 whitespace-nowrap group relative overflow-hidden h-12 flex-shrink-0 w-full"
           [ngClass]="[
             activeTab === UILabels.ADMIN.DASHBOARD.TABS.MENUS
               ? 'bg-primary-light/50 text-primary-dark'
               : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900',
-            isSidebarCollapsed ? 'lg:justify-center w-full px-0' : 'px-4 gap-3'
+            isSidebarCollapsed
+              ? 'justify-start lg:justify-center px-4 lg:px-0'
+              : 'px-4 gap-3',
           ]"
         >
           <div
             *ngIf="activeTab === UILabels.ADMIN.DASHBOARD.TABS.MENUS"
-            class="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-r-lg hidden lg:block"
+            class="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-r-lg"
           ></div>
           <mat-icon
             class="group-hover:scale-110 transition-transform flex-shrink-0"
+            [ngClass]="{ 'mr-3': isSidebarCollapsed }"
             >restaurant_menu</mat-icon
           >
           <span
             class="transition-all duration-300 whitespace-nowrap"
             [ngClass]="
-              isSidebarCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
+              isSidebarCollapsed
+                ? 'lg:opacity-0 lg:w-0 opacity-100 w-auto'
+                : 'opacity-100 w-auto'
             "
           >
             {{ UILabels.ADMIN.DASHBOARD.LABELS.MENUS }}
@@ -117,26 +160,31 @@
         <button
           *ngIf="admintype === 1"
           (click)="setActiveTab(UILabels.ADMIN.DASHBOARD.TABS.USERS)"
-          class="flex items-center rounded-2xl text-[15px] font-semibold transition-all duration-300 whitespace-nowrap group relative overflow-hidden h-12"
+          class="flex items-center rounded-2xl text-[15px] font-semibold transition-all duration-300 whitespace-nowrap group relative overflow-hidden h-12 flex-shrink-0 w-full"
           [ngClass]="[
             activeTab === UILabels.ADMIN.DASHBOARD.TABS.USERS
               ? 'bg-primary-light/50 text-primary-dark'
               : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900',
-            isSidebarCollapsed ? 'lg:justify-center w-full px-0' : 'px-4 gap-3'
+            isSidebarCollapsed
+              ? 'justify-start lg:justify-center px-4 lg:px-0'
+              : 'px-4 gap-3',
           ]"
         >
           <div
             *ngIf="activeTab === UILabels.ADMIN.DASHBOARD.TABS.USERS"
-            class="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-r-lg hidden lg:block"
+            class="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-r-lg"
           ></div>
           <mat-icon
             class="group-hover:scale-110 transition-transform flex-shrink-0"
+            [ngClass]="{ 'mr-3': isSidebarCollapsed }"
             >people</mat-icon
           >
           <span
             class="transition-all duration-300 whitespace-nowrap"
             [ngClass]="
-              isSidebarCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
+              isSidebarCollapsed
+                ? 'lg:opacity-0 lg:w-0 opacity-100 w-auto'
+                : 'opacity-100 w-auto'
             "
           >
             {{ UILabels.ADMIN.DASHBOARD.LABELS.USERS }}
@@ -147,26 +195,31 @@
         <button
           *ngIf="admintype === 1"
           (click)="setActiveTab(UILabels.ADMIN.DASHBOARD.TABS.TRANSACTIONS)"
-          class="flex items-center rounded-2xl text-[15px] font-semibold transition-all duration-300 whitespace-nowrap group relative overflow-hidden h-12"
+          class="flex items-center rounded-2xl text-[15px] font-semibold transition-all duration-300 whitespace-nowrap group relative overflow-hidden h-12 flex-shrink-0 w-full"
           [ngClass]="[
             activeTab === UILabels.ADMIN.DASHBOARD.TABS.TRANSACTIONS
               ? 'bg-primary-light/50 text-primary-dark'
               : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900',
-            isSidebarCollapsed ? 'lg:justify-center w-full px-0' : 'px-4 gap-3'
+            isSidebarCollapsed
+              ? 'justify-start lg:justify-center px-4 lg:px-0'
+              : 'px-4 gap-3',
           ]"
         >
           <div
             *ngIf="activeTab === UILabels.ADMIN.DASHBOARD.TABS.TRANSACTIONS"
-            class="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-r-lg hidden lg:block"
+            class="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-r-lg"
           ></div>
           <mat-icon
             class="group-hover:scale-110 transition-transform flex-shrink-0"
+            [ngClass]="{ 'mr-3': isSidebarCollapsed }"
             >history</mat-icon
           >
           <span
             class="transition-all duration-300 whitespace-nowrap"
             [ngClass]="
-              isSidebarCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
+              isSidebarCollapsed
+                ? 'lg:opacity-0 lg:w-0 opacity-100 w-auto'
+                : 'opacity-100 w-auto'
             "
           >
             {{ UILabels.ADMIN.DASHBOARD.LABELS.TRANSACTIONS }}
@@ -209,7 +262,7 @@
             *ngIf="activeTab === UILabels.ADMIN.DASHBOARD.TABS.ORDERS"
             class="text-sm text-slate-500"
           >
-            {{ selectedDate | date : "dd/MM/yyyy" }}
+            {{ selectedDate | date: "dd/MM/yyyy" }}
           </p>
         </div>
       </div>
@@ -394,8 +447,8 @@
               activeTab === UILabels.ADMIN.DASHBOARD.TABS.ORDERS
                 ? exportOrdersData()
                 : activeTab === UILabels.ADMIN.DASHBOARD.TABS.MENUS
-                ? exportMenuData()
-                : exportUserData()
+                  ? exportMenuData()
+                  : exportUserData()
             "
             class="h-12 flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-6 rounded-2xl font-semibold shadow-lg shadow-primary/20 transition-all active:scale-95 whitespace-nowrap"
           >
@@ -606,7 +659,7 @@
                             'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]':
                               order.orderStatus?.id === 3,
                             'bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.5)]':
-                              order.orderStatus?.id === 4
+                              order.orderStatus?.id === 4,
                           }"
                         ></div>
                         <select
@@ -830,7 +883,7 @@
                       'bg-amber-400': column.status === 1,
                       'bg-primary': column.status === 2,
                       'bg-emerald-400': column.status === 3,
-                      'bg-rose-400': column.status === 4
+                      'bg-rose-400': column.status === 4,
                     }"
                   ></div>
                   <h3
@@ -985,12 +1038,12 @@
                 <span
                   class="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1"
                 >
-                  {{ dateItem.date | date : "EEEE" : "" : "ca" }}
+                  {{ dateItem.date | date: "EEEE" : "" : "ca" }}
                 </span>
                 <h3 class="text-xl font-black text-slate-800 tracking-tight">
-                  {{ dateItem.date | date : "dd" }}
+                  {{ dateItem.date | date: "dd" }}
                   <span class="text-slate-400 font-medium">{{
-                    dateItem.date | date : "MMM" : "" : "ca"
+                    dateItem.date | date: "MMM" : "" : "ca"
                   }}</span>
                 </h3>
               </div>
@@ -1015,7 +1068,8 @@
                     [ngClass]="{
                       'bg-amber-500': menu.type === AppConstants.DISH_TYPES[1],
                       'bg-primary': menu.type === AppConstants.DISH_TYPES[2],
-                      'bg-emerald-500': menu.type === AppConstants.DISH_TYPES[3]
+                      'bg-emerald-500':
+                        menu.type === AppConstants.DISH_TYPES[3],
                     }"
                   ></div>
 
@@ -1028,15 +1082,15 @@
                         'text-primary':
                           menu.type === AppConstants.DISH_TYPES[2],
                         'text-emerald-500':
-                          menu.type === AppConstants.DISH_TYPES[3]
+                          menu.type === AppConstants.DISH_TYPES[3],
                       }"
                     >
                       {{
                         menu.type === AppConstants.DISH_TYPES[1]
                           ? "soup_kitchen"
                           : menu.type === AppConstants.DISH_TYPES[2]
-                          ? "restaurant"
-                          : "icecream"
+                            ? "restaurant"
+                            : "icecream"
                       }}
                     </mat-icon>
                     <span
@@ -1047,7 +1101,7 @@
                         'text-primary-dark':
                           menu.type === AppConstants.DISH_TYPES[2],
                         'text-emerald-600':
-                          menu.type === AppConstants.DISH_TYPES[3]
+                          menu.type === AppConstants.DISH_TYPES[3],
                       }"
                     >
                       {{ menu.type }}
@@ -1064,7 +1118,7 @@
                         'bg-primary-light text-primary-dark border border-primary-light':
                           menu.type === AppConstants.DISH_TYPES[2],
                         'bg-emerald-50 text-emerald-700 border border-emerald-100/50':
-                          menu.type === AppConstants.DISH_TYPES[3]
+                          menu.type === AppConstants.DISH_TYPES[3],
                       }"
                     >
                       {{ option }}
@@ -1213,7 +1267,7 @@
                         student.user_type_id === 1,
                       'bg-amber-100 text-amber-700': student.user_type_id === 2,
                       'bg-emerald-100 text-emerald-700':
-                        student.user_type_id === 3
+                        student.user_type_id === 3,
                     }"
                   >
                     {{ getRoleName(student.user_type_id) }}
@@ -1224,7 +1278,7 @@
                   [class.text-primary]="(student.balance || 0) > 0"
                 >
                   {{
-                    student.balance || 0 | currency : "EUR" : "symbol" : "1.2-2"
+                    student.balance || 0 | currency: "EUR" : "symbol" : "1.2-2"
                   }}
                 </td>
                 <td class="px-6 py-4 text-right">
@@ -1344,7 +1398,7 @@
                       student.user_type_id === 1,
                     'bg-amber-100 text-amber-700': student.user_type_id === 2,
                     'bg-emerald-100 text-emerald-700':
-                      student.user_type_id === 3
+                      student.user_type_id === 3,
                   }"
                 >
                   {{ getRoleName(student.user_type_id) }}
@@ -1354,7 +1408,7 @@
                   [class.text-primary]="(student.balance || 0) > 0"
                 >
                   {{
-                    student.balance || 0 | currency : "EUR" : "symbol" : "1.2-2"
+                    student.balance || 0 | currency: "EUR" : "symbol" : "1.2-2"
                   }}
                 </span>
               </div>
